@@ -55,8 +55,14 @@ for (let d = new Date(gridStart); d <= today; d.setUTCDate(d.getUTCDate() + 1)) 
   const x = x0 + week * step, y = y0 + d.getUTCDay() * step
   if (d < start) continue
   const month = d.toISOString().slice(0, 7)
-  if (month !== previousMonth && (d.getUTCDate() <= 7 || !previousMonth)) {
-    text(x, 94, d.toLocaleDateString('en', { month: 'short', timeZone: 'UTC' }), 11)
+  if (month !== previousMonth) {
+    const nextMonth = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1))
+    const nextMonthWeek = Math.floor((nextMonth - gridStart) / 86400000 / 7)
+    // A short opening month may share a column with the next month. Leave
+    // two columns (30px) for its label, or omit that partial-month label.
+    if (previousMonth || nextMonthWeek - week >= 2) {
+      text(x, 94, d.toLocaleDateString('en', { month: 'short', timeZone: 'UTC' }), 11)
+    }
     previousMonth = month
   }
   const { tokens, prompts } = daily.get(date(d)) ?? { tokens: 0, prompts: 0 }
